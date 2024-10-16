@@ -15,8 +15,8 @@ export async function customfetch<T>(url: string, options?: RequestInit) {
   }
 }
 
-const key = Buffer.from(process.env.KEY as string, "base64").toString("utf-8");
-const iv = process.env.IV as string;
+const key = Buffer.from(Bun.env.KEY as string, "base64").toString("utf-8");
+const iv = Bun.env.IV as string;
 
 /**
  * 对字符串进行加密
@@ -33,7 +33,7 @@ export function encryption(str: string) {
 }
 
 export function log(str: string) {
-  const handledStr = `${process.env.ACCOUNT}: ${str}`;
+  const handledStr = `${Bun.env.ACCOUNT}: ${str}`;
   console.log(handledStr);
   appendFileSync("output.txt", handledStr + "\n", { encoding: "utf-8" });
 }

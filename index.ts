@@ -2,9 +2,9 @@ import dayjs from "dayjs";
 import { checkComplete, commitAnswer, getQuestionByDay, login } from "./api/api";
 import { log } from "./utils/utils";
 
-process.env.TZ = "Asia/Shanghai";
+Bun.env.TZ = "Asia/Shanghai";
 
-const today = process.env.DATE || dayjs().format("YYYY-MM-DD");
+const today = Bun.env.DATE || dayjs().format("YYYY-MM-DD");
 
 await login();
 

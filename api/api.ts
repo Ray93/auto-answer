@@ -1,6 +1,6 @@
 import { customfetch, encryption } from "../utils/utils";
 
-const loginInfo = { account: process.env.ACCOUNT as string, password: process.env.PASSWORD as string };
+const loginInfo = { account: Bun.env.ACCOUNT as string, password: Bun.env.PASSWORD as string };
 
 async function login() {
   const { account, password } = loginInfo;

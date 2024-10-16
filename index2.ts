@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import { commitAnswer, getQuestionByDay, getUnCompletDates, login } from "./api/api";
 import { log } from "./utils/utils";
 
-process.env.TZ = "Asia/Shanghai";
+Bun.env.TZ = "Asia/Shanghai";
 
 const startDay = dayjs().startOf("month").format("YYYY-MM-DD");
 const endDay = dayjs().format("YYYY-MM-DD");
