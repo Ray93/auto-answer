@@ -15,6 +15,8 @@ env:
   PASSWORD: ${{ github.event.inputs.password || secrets.PASSWORD }}
   KEY: ${{ secrets.KEY }}
   IV: ${{ secrets.IV }}
+  TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
 jobs:
   run-script:
