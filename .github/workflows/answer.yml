@@ -31,10 +31,67 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
-      - run: bun install
-      - name: Run Answer Script and Send Telegram Message
+          bun-version-file: ".bun-version"
+      - name: Cache Bun
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+      - run: bun install --frozen-lockfile
+      - id: script
+        name: Run Answer Script
         run: |
-          bun run index.ts || true
-          output=$(cat output.txt)
-          curl -s -X POST https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage -d chat_id=${TELEGRAM_CHAT_ID} -d text="$output"
+          bun run index.ts
+          exit_code=$?
+          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
+          if [ -f output.txt ]; then
+            output=$(cat output.txt)
+            echo "output=$output" >> $GITHUB_OUTPUT
+          fi
+      - name: Send Telegram Notification
+        if: always()
+        run: |
+          # Check if Telegram secrets exist
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "Telegram secrets not configured, skipping notification"
+            exit 0
+          fi
+          
+          # Determine status emoji based on exit code
+          exit_code="${{ steps.script.outputs.exit_code }}"
+          if [ "$exit_code" = "0" ]; then
+            status="✅"
+          else
+            status="❌"
+          fi
+          
+          # Get date (use DATE env if set, otherwise current date)
+          if [ -n "$DATE" ]; then
+            date_text="$DATE"
+          else
+            date_text=$(date +%Y-%m-%d)
+          fi
+          
+          # Get account
+          account="${ACCOUNT:-N/A}"
+          
+          # Get output content
+          output="${{ steps.script.outputs.output }}"
+          
+          # Construct message
+          message="${status} Auto Answer - ${date_text}"$'\n'"Account: ${account}"$'\n'"${output}"
+          
+          # Send notification with timeout and fail flag
+          curl -s -X POST https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage \
+            -d chat_id=${TELEGRAM_CHAT_ID} \
+            -d text="${message}" \
+            --max-time 10 \
+            --fail || echo "Failed to send Telegram notification"
+      - name: Fail on Error
+        if: ${{ steps.script.outputs.exit_code != '0' }}
+        run: |
+          exit ${{ steps.script.outputs.exit_code }}
