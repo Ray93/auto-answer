@@ -1,26 +1,42 @@
-import { customfetch, encryption } from "../utils/utils";
-
-const loginInfo = { account: Bun.env.ACCOUNT as string, password: Bun.env.PASSWORD as string };
+import { customfetch } from "../utils/http";
+import { encryption } from "../utils/utils";
+import { config, buildAPIUrl, APIEndpoint } from "../config/config";
+import { 
+  isDailyQuestionResult, 
+  isQuestionStaticResult, 
+  isCommitAnswerResponse,
+  type CommitAnswerResponse
+} from "../types/guards";
 
 async function login() {
-  const { account, password } = loginInfo;
+  const { account, password } = config.credentials;
   const encry_username = encryption(account);
   const encry_password = encryption(password);
 
-  const data = await customfetch<LoginResult>(`https://www.questiontest.cn:5988/PCapi/user/login`, {
+  const data = await customfetch<LoginResult>(buildAPIUrl(APIEndpoint.LOGIN), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ account: encry_username, password: encry_password }),
   });
-  globalThis.authToken = data?.userInfo?.token as string;
+  
+  if (!data || !data.userInfo || !data.userInfo.token) {
+    throw new Error("登录失败：无法获取认证令牌");
+  }
+  
+  globalThis.authToken = data.userInfo.token;
 }
 
 async function getQuestionByDay(date: string) {
   const data = await customfetch<DailyQuestionResult>(
-    `https://www.questiontest.cn:5988/PCapi/practiceTask/queryDailyQuestions?queryDate=${date}`,
+    buildAPIUrl(APIEndpoint.QUERY_DAILY_QUESTIONS, { queryDate: date }),
     { headers: { Authorization: globalThis.authToken } }
   );
-  const { rightAnswer, questionId } = data?.questionOptions[0] as DailyQuestion;
+  
+  if (!data || !isDailyQuestionResult(data)) {
+    throw new Error(`无法获取题目数据: ${date}`);
+  }
+  
+  const { rightAnswer, questionId } = data.questionOptions[0];
   return { queryTime: date, questionId, questionAnswer: rightAnswer };
 }
 
@@ -31,29 +47,49 @@ async function commitAnswer(answerParam: AnswerParam) {
     );
   }
 
-  const data = await customfetch<any>(`https://www.questiontest.cn:5988/clientapi/dailyQuestions/commitAnswer`, {
-    method: "POST",
-    headers: { Authorization: globalThis.authToken, "Content-Type": "application/json" },
-    body: JSON.stringify(answerParam),
-  });
+  const data = await customfetch<CommitAnswerResponse>(
+    buildAPIUrl(APIEndpoint.COMMIT_ANSWER),
+    {
+      method: "POST",
+      headers: { Authorization: globalThis.authToken, "Content-Type": "application/json" },
+      body: JSON.stringify(answerParam),
+    }
+  );
+  
+  if (!isCommitAnswerResponse(data)) {
+    throw new Error("提交答案失败：无效的响应格式");
+  }
+  
   console.log(data);
 }
 
 async function checkComplete(date: string) {
   const data = await customfetch<questionStaticResult>(
-    `https://www.questiontest.cn:5988/clientapi/dailyQuestions/questionStatic?startDate=${date}&endDate=${date}`,
+    buildAPIUrl(APIEndpoint.QUESTION_STATISTIC, { startDate: date, endDate: date }),
     { headers: { Authorization: globalThis.authToken } }
   );
+  
+  if (!data || !isQuestionStaticResult(data) || data.questionStaticList.length === 0) {
+    throw new Error(`无法获取题目统计: ${date}`);
+  }
+  
   return data.questionStaticList[0];
 }
 
 /** 获取未完成日期 */
 async function getUnCompletDates(startDate: string, endDate: string) {
   const data = await customfetch<questionStaticResult>(
-    `https://www.questiontest.cn:5988/clientapi/dailyQuestions/questionStatic?startDate=${startDate}&endDate=${endDate}`,
+    buildAPIUrl(APIEndpoint.QUESTION_STATISTIC, { startDate, endDate }),
     { headers: { Authorization: globalThis.authToken } }
   );
-  return data?.questionStaticList.filter((item) => item.correctNum === 0 && !item.holiday).map((item) => item.dateStr);
+  
+  if (!data || !isQuestionStaticResult(data)) {
+    throw new Error(`无法获取题目统计: ${startDate} - ${endDate}`);
+  }
+  
+  return data.questionStaticList
+    .filter((item) => item.correctNum === 0 && !item.holiday)
+    .map((item) => item.dateStr);
 }
 
 export { login, getQuestionByDay, commitAnswer, checkComplete, getUnCompletDates };

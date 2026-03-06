@@ -41,3 +41,12 @@ interface QuestionStatic {
 interface questionStaticResult {
   questionStaticList: QuestionStatic[];
 }
+
+/**
+ * 提交答案响应类型
+ */
+interface CommitAnswerResponse {
+  code: number;
+  msg: string;
+  data?: unknown;
+}
