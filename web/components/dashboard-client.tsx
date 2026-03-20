@@ -31,6 +31,51 @@ interface StatsPayload {
 
 const weekdayLabels = ["一", "二", "三", "四", "五", "六", "日"];
 
+function DashboardSkeleton() {
+  return (
+    <div className="container py-8">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-2 animate-pulse">
+          <div className="h-8 w-40 rounded bg-stone-300" />
+          <div className="h-4 w-64 rounded bg-stone-200" />
+        </div>
+        <div className="h-9 w-24 rounded-md bg-stone-200 animate-pulse" />
+      </div>
+
+      <div className="mb-3 grid grid-cols-4 gap-2 sm:mb-4 sm:gap-3">
+        {Array.from({ length: 4 }, (_, index) => (
+          <Card key={index} className="bg-white/80">
+            <CardHeader className="p-2 pb-1 sm:p-6 sm:pb-2">
+              <div className="h-3 w-14 rounded bg-stone-200 animate-pulse" />
+            </CardHeader>
+            <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
+              <div className="h-8 w-12 rounded bg-stone-300 animate-pulse" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Card className="border-white/70 bg-white/90 shadow-lg backdrop-blur">
+        <CardHeader className="space-y-3 p-3 sm:p-6">
+          <div className="flex items-center justify-between gap-2 sm:justify-start animate-pulse">
+            <div className="h-8 w-16 rounded bg-stone-200" />
+            <div className="h-6 w-24 rounded bg-stone-300" />
+            <div className="h-8 w-16 rounded bg-stone-200" />
+          </div>
+          <div className="h-9 w-full rounded bg-stone-200 animate-pulse sm:w-40" />
+        </CardHeader>
+        <CardContent className="space-y-3 p-3 pt-0 sm:p-6 sm:pt-0">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
+            {Array.from({ length: 35 }, (_, index) => (
+              <div key={index} className="h-14 rounded-lg border border-stone-200 bg-stone-100 animate-pulse sm:h-20" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 function getCellStatus(record: QuestionStatic | undefined, date: string, today: string, loading: boolean) {
   if (loading) return "default";
   if (date > today) return "future";
@@ -209,6 +254,10 @@ export function DashboardClient() {
     router.refresh();
   };
 
+  if (loading && !stats) {
+    return <DashboardSkeleton />;
+  }
+
   return (
     <div className="container py-8">
       <div className="mb-2 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
@@ -268,7 +317,7 @@ export function DashboardClient() {
             </Button>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-wrap items-center gap-4 sm:gap-1">
+            <div className="flex flex-wrap items-center gap-1 sm:gap-4">
               <Badge variant="secondary">黄: 待补答</Badge>
               <Badge className="bg-rose-600 text-white hover:bg-rose-600">红: 答错</Badge>
               <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">绿: 已答</Badge>
