@@ -56,11 +56,11 @@ async function commitAnswer(answerParam: AnswerParam) {
     }
   );
   
+  console.log("答题结果: ",data);
+    
   if (!isCommitAnswerResponse(data)) {
     throw new Error("提交答案失败：无效的响应格式");
   }
-  
-  console.log(data);
 }
 
 async function checkComplete(date: string) {
