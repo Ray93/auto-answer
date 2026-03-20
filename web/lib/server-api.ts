@@ -215,6 +215,10 @@ export async function answerDateWithCheck(token: string, date: string): Promise<
     return { date, status: "already_answered" };
   }
 
+  if (record.practiceNum > 0) {
+    return { date, status: "already_wrong" };
+  }
+
   await submitAnswerForDate(token, date);
   return { date, status: "answered" };
 }
@@ -227,7 +231,7 @@ export async function answerMonth(token: string, month: string): Promise<{
 }> {
   const stats = await getMonthStats(token, month);
   const pendingDates = stats.questionStaticList
-    .filter((item) => item.correctNum === 0 && !item.holiday)
+    .filter((item) => item.practiceNum === 0 && item.correctNum === 0 && !item.holiday)
     .map((item) => item.dateStr);
 
   const successDates: string[] = [];

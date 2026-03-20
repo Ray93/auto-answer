@@ -37,6 +37,7 @@ function getCellStatus(record: QuestionStatic | undefined, date: string, today: 
   if (!record) return "pending";
   if (record.holiday) return "holiday";
   if (record.correctNum > 0) return "answered";
+  if (record.practiceNum > 0) return "wrong";
   return "pending";
 }
 
@@ -46,6 +47,8 @@ function statusStyle(status: string) {
       return "border-emerald-200 bg-emerald-50";
     case "holiday":
       return "border-slate-200 bg-slate-50";
+    case "wrong":
+      return "border-rose-200 bg-rose-50";
     case "pending":
       return "border-amber-200 bg-amber-50";
     case "default":
@@ -156,6 +159,8 @@ export function DashboardClient() {
         setMessage(`${date} 是休息日，无需补答`);
       } else if (status === "already_answered") {
         setMessage(`${date} 已经答过`);
+      } else if (status === "already_wrong") {
+        setMessage(`${date} 已答错，无需补答`);
       } else {
         setMessage(`${date} 补答成功`);
       }
@@ -243,7 +248,7 @@ export function DashboardClient() {
         </Card>
         <Card className="bg-white/80">
           <CardHeader className="p-2 pb-1 sm:p-6 sm:pb-2">
-            <CardTitle className="text-[11px] font-medium text-muted-foreground sm:text-sm">休息日</CardTitle>
+            <CardTitle className="text-[11px] font-medium text-muted-foreground sm:text-sm">休息</CardTitle>
           </CardHeader>
           <CardContent className="p-2 pt-0 sm:p-6 sm:pt-0">
             <div className="text-lg font-bold leading-none text-slate-500 sm:text-2xl">{stats?.summary.holiday ?? 0}</div>
@@ -263,10 +268,11 @@ export function DashboardClient() {
             </Button>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-4 sm:gap-1">
               <Badge variant="secondary">黄: 待补答</Badge>
-              <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">绿: 已答题</Badge>
-              <Badge variant="outline">灰: 休息日/未来</Badge>
+              <Badge className="bg-rose-600 text-white hover:bg-rose-600">红: 答错</Badge>
+              <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">绿: 已答</Badge>
+              <Badge variant="outline">灰: 休息/未来</Badge>
             </div>
             <Button className="w-full sm:w-auto" onClick={answerMonth} disabled={batchLoading || loading}>
               {batchLoading ? "补答中..." : "一键补答当月"}
@@ -314,6 +320,12 @@ export function DashboardClient() {
                         <>
                           <Badge variant="outline" className="hidden h-5 text-[10px] sm:inline-flex">休息</Badge>
                           <span className="inline-block h-2 w-2 rounded-full bg-slate-400 sm:hidden" />
+                        </>
+                      ) : null}
+                      {status === "wrong" ? (
+                        <>
+                          <Badge className="hidden h-5 bg-rose-600 text-[10px] text-white hover:bg-rose-600 sm:inline-flex">答错</Badge>
+                          <span className="inline-block h-2 w-2 rounded-full bg-rose-600 sm:hidden" />
                         </>
                       ) : null}
                       {status === "pending" ? (

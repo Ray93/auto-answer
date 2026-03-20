@@ -37,7 +37,7 @@ export interface QuestionStaticResult {
   questionStaticList: QuestionStatic[];
 }
 
-export type AnswerStatus = "answered" | "already_answered" | "holiday";
+export type AnswerStatus = "answered" | "already_answered" | "already_wrong" | "holiday";
 
 export interface AnswerDateResult {
   date: string;

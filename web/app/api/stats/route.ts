@@ -31,6 +31,8 @@ export async function GET(request: Request) {
           acc.holiday += 1;
         } else if (item.correctNum > 0) {
           acc.answered += 1;
+        } else if (item.practiceNum > 0) {
+          acc.answered += 1;
         } else {
           acc.pending += 1;
         }
