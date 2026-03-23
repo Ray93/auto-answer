@@ -1,13 +1,4 @@
 /**
- * 提交答案响应类型
- */
-export interface CommitAnswerResponse {
-  code: number;
-  msg: string;
-  data?: unknown;
-}
-
-/**
  * 类型守卫和类型验证工具
  */
 
@@ -63,13 +54,4 @@ export function isQuestionStaticResult(data: unknown): data is questionStaticRes
     (item.holiday === null || typeof item.holiday === 'boolean') &&
     typeof item.isCompete === 'boolean'
   );
-}
-
-/**
- * 验证提交答案响应
- */
-export function isCommitAnswerResponse(data: unknown): data is CommitAnswerResponse {
-  if (!isObject(data)) return false;
-  
-  return typeof data.code === 'number' && typeof data.msg === 'string';
 }

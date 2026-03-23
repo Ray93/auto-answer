@@ -3,9 +3,7 @@ import { encryption } from "../utils/utils";
 import { config, buildAPIUrl, APIEndpoint } from "../config/config";
 import { 
   isDailyQuestionResult, 
-  isQuestionStaticResult, 
-  isCommitAnswerResponse,
-  type CommitAnswerResponse
+  isQuestionStaticResult
 } from "../types/guards";
 
 async function login() {
@@ -47,7 +45,7 @@ async function commitAnswer(answerParam: AnswerParam) {
     );
   }
 
-  const data = await customfetch<CommitAnswerResponse>(
+  await customfetch<unknown>(
     buildAPIUrl(APIEndpoint.COMMIT_ANSWER),
     {
       method: "POST",
@@ -55,12 +53,6 @@ async function commitAnswer(answerParam: AnswerParam) {
       body: JSON.stringify(answerParam),
     }
   );
-  
-  console.log("答题结果: ",data);
-    
-  if (!isCommitAnswerResponse(data)) {
-    throw new Error("提交答案失败：无效的响应格式");
-  }
 }
 
 async function checkComplete(date: string) {

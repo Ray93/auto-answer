@@ -8,7 +8,6 @@ import {
   isLoginResult,
   isDailyQuestionResult,
   isQuestionStaticResult,
-  isCommitAnswerResponse,
 } from "../types/guards";
 
 describe("类型守卫测试", () => {
@@ -134,32 +133,5 @@ describe("类型守卫测试", () => {
       ],
     };
     expect(isQuestionStaticResult(resultWithInvalidHoliday)).toBe(false);
-  });
-
-  test("isCommitAnswerResponse", () => {
-    const validResponse = {
-      code: 200,
-      msg: "成功",
-    };
-    expect(isCommitAnswerResponse(validResponse)).toBe(true);
-
-    const validResponseWithData = {
-      code: 200,
-      msg: "成功",
-      data: { some: "data" },
-    };
-    expect(isCommitAnswerResponse(validResponseWithData)).toBe(true);
-
-    const invalidResponse1 = {
-      code: "200", // string instead of number
-      msg: "成功",
-    };
-    expect(isCommitAnswerResponse(invalidResponse1)).toBe(false);
-
-    const invalidResponse2 = {
-      code: 200,
-      // missing msg
-    };
-    expect(isCommitAnswerResponse(invalidResponse2)).toBe(false);
   });
 });
